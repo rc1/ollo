@@ -13,7 +13,7 @@ class ColorPointsWebGLRenderer {
         this.sizeProp = new ReactiveProperty( [0,0] );
 
         // Point size
-        this.pointSizeProp = new ReactiveProperty( 10 );
+        this.pointSizeProp = new ReactiveProperty( 100 );
 
         // Points
         // an array of positions in the form [ x, y ]
@@ -45,9 +45,6 @@ class ColorPointsWebGLRenderer {
             autoClear: true,
             autoClearColor: 0x0000ff // not working?
         });
-
-        renderer.setSize( this.sizeProp.value[ 0 ], this.sizeProp.value[ 1 ], false );
-
         // Camera
         const camera = new OrthographicCamera( 0, this.sizeProp.value[0], 0, this.sizeProp.value[1], 1, 1000 );
         camera.position.z = 10;
@@ -58,9 +55,10 @@ class ColorPointsWebGLRenderer {
         this.subscriptions.push(
             this.sizeProp
                 .subscribe( wh => {
-                    console.log( "resizing", wh[ 0 ], wh[ 1 ] );
+                    //camera.left = wh[ 0 ]/-2;
                     camera.right = wh[ 0 ];
                     camera.bottom = wh[ 1 ];
+                    //camera.bottom = wh[ 1 ]/-2;
                     camera.aspect = wh[ 0 ] / wh[ 1 ];
                     camera.updateProjectionMatrix();
                     needsRedraw.value = true;
@@ -93,7 +91,8 @@ class ColorPointsWebGLRenderer {
             transparent: true,
             depthWrite: false,
             alphaTest: 0.5,
-            vertexColors: Constants.VertexColors
+            vertexColors: Constants.VertexColors,
+            sizeAttenuation: false
         });
 
         // bind to point size

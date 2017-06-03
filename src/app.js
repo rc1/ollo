@@ -9,71 +9,58 @@ $( function () {
 
     renderer.start( $( '#ollo' ) );
 
-    renderer.pointsProp.value = positions.logo.points;
+    renderer.pointsProp.value = positions.logo.points.map( p => [ p[ 0 ] * $( window ).width(), p[ 1 ] * $( window ).height() ] );
     renderer.colorsProp.value = positions.logo.points.map( _ => [ Math.random(), Math.random(), Math.random() ] );
 
-
-
-
-    // start()
-    //     .then( app => {
-    //
-    //         // Update the positions
-    //         app.renderer.positions.forEach( ( p, idx ) => {
-    //             var vec = app.physics.vertices[ idx ];
-    //             applyVec2ToPArray( vec, p );
-    //         });
-    //
-    //         app.renderer.needsRedraw = true;
-    //     });
 });
 
-function start () {
-    return new Promise( ( resolve, reject ) => {
 
-        var app = {};
-
-        Physics
-           .make()
-           .then( physics => {
-               physics.initalPoints = positions.logo.points;
-               return Physics.init( physics );
-           })
-           .then( physics => {
-               app.physics = physics;
-               return Renderer.make();
-           })
-           .then( renderer => {
-               renderer.$canvasEl = $( '#ollo' );
-               renderer.positions = app.physics.vertices.map( vec2ToPArray );
-               renderer.colors = pp.physics.vertices
-                   .map( ( _, idx, { length: len } ) => idx / ( len - 1 ) )
-                   .map( );
-               return Renderer.init( renderer );
-           })
-           .then( renderer => {
-               app.renderer = renderer;
-               resolve( app );
-           })
-           .catch( reject );
-
-    });
-}
-
-function applyVec2ToPArray ( vec, pArray ) {
-    pArray[ 0 ] = vec.x;
-    pArray[ 1 ] = vec.y;
-}
-
-function applyPArrayToVec2 ( pArray, vec ) {
-    vec.x = pArray[ 0 ];
-    vec.y = pArray[ 1 ];
-}
-
-function vec2ToPArray ( vec ) {
-    return [ vec.x, vec.y ];
-}
-
+// function start () {
+//     return new Promise( ( resolve, reject ) => {
+//
+//         var app = {};
+//
+//         Physics
+//            .make()
+//            .then( physics => {
+//                physics.initalPoints = positions.logo.points;
+//                return Physics.init( physics );
+//            })
+//            .then( physics => {
+//                app.physics = physics;
+//                return Renderer.make();
+//            })
+//            .then( renderer => {
+//                renderer.$canvasEl = $( '#ollo' );
+//                renderer.positions = app.physics.vertices.map( vec2ToPArray );
+//                renderer.colors = pp.physics.vertices
+//                    .map( ( _, idx, { length: len } ) => idx / ( len - 1 ) )
+//                    .map( );
+//                return Renderer.init( renderer );
+//            })
+//            .then( renderer => {
+//                app.renderer = renderer;
+//                resolve( app );
+//            })
+//            .catch( reject );
+//
+//     });
+// }
+//
+// function applyVec2ToPArray ( vec, pArray ) {
+//     pArray[ 0 ] = vec.x;
+//     pArray[ 1 ] = vec.y;
+// }
+//
+// function applyPArrayToVec2 ( pArray, vec ) {
+//     vec.x = pArray[ 0 ];
+//     vec.y = pArray[ 1 ];
+// }
+//
+// function vec2ToPArray ( vec ) {
+//     return [ vec.x, vec.y ];
+// }
+//
 
 
 // var data = [

@@ -4,7 +4,7 @@ import { Subscription } from 'rxjs/Subscription';
 export class ReactiveProperty extends Subject {
     constructor( v ) {
         super();
-     
+
         var value = v;
         this.notifyOnSubscribe = arguments.length > 0;
 
@@ -17,7 +17,7 @@ export class ReactiveProperty extends Subject {
         });
 
         this.do( null, null, function () {
-            
+
         });
     }
     _subscribe( subscriber ) {
