@@ -1,19 +1,31 @@
 import $ from 'jquery';
-import { Renderer, positions, Physics } from './ollo/main';
+import ColorPointWebGLRenderer from './ollo/color-points-webgl-renderer';
+import positions from './ollo/positions';
 
 $( function () {
 
-    start()
-        .then( app => {
+    const renderer = new ColorPointWebGLRenderer();
 
-            // Update the positions
-            app.renderer.positions.forEach( ( p, idx ) => {
-                var vec = app.physics.vertices[ idx ];
-                applyVec2ToPArray( vec, p );
-            });
 
-            app.renderer.needsRedraw = true;
-        });
+    renderer.start( $( '#ollo' ) );
+
+    renderer.pointsProp.value = positions.logo.points;
+    renderer.colorsProp.value = positions.logo.points.map( _ => [ Math.random(), Math.random(), Math.random() ] );
+
+
+
+
+    // start()
+    //     .then( app => {
+    //
+    //         // Update the positions
+    //         app.renderer.positions.forEach( ( p, idx ) => {
+    //             var vec = app.physics.vertices[ idx ];
+    //             applyVec2ToPArray( vec, p );
+    //         });
+    //
+    //         app.renderer.needsRedraw = true;
+    //     });
 });
 
 function start () {
