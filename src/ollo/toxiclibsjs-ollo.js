@@ -3642,8 +3642,15 @@ Spline2D.prototype = {
 		for (var i = 0; i < this.numP - 1; i++) {
 			var p = this.points[i];
 			var q = this.points[i + 1];
-			deltaP.set(this.delta[i]).addSelf(p);
-			deltaQ.set(q).subSelf(this.delta[i + 1]);
+
+			// deltaP.set(this.delta[i]).addSelf(p);
+			deltaP.x = this.delta[i].x + p.x;
+			deltaP.y = this.delta[i].y + p.y;
+
+			// deltaQ.set(q).subSelf(this.delta[i + 1]);
+			deltaQ.x = q.x - this.delta[i + 1].x;
+			deltaQ.y = q.y - this.delta[i + 1].y;
+
 			for (var k = 0; k < res; k++) {
 				var x = p.x * bst.b0[k] + deltaP.x * bst.b1[k] +
 				deltaQ.x * bst.b2[k] +
@@ -3667,16 +3674,30 @@ Spline2D.prototype = {
 		p0 = this.pointList[0];
 		p2 = this.pointList[2];
 		d0 = this.delta[0];
-		this.coeffA[1].set((p2.x - p0.x - d0.x) * this.tightness, (p2.y - p0.y - d0.y) * this.tightness);
+
+		// this.coeffA[1].set(
+		// 	(p2.x - p0.x - d0.x) * this.tightness, 
+		// 	(p2.y - p0.y - d0.y) * this.tightness);
+		this.coeffA[1].x = (p2.x - p0.x - d0.x) * this.tightness;
+		this.coeffA[1].y = (p2.y - p0.y - d0.y) * this.tightness;
+
 		for (i = 2; i < this.numP - 1; i++) {
 			this.bi[i] = -1 / (this.invTightness + this.bi[i - 1]);
-			this.coeffA[i].set(-(this.points[i + 1].x - this.points[i - 1].x - this.coeffA[i - 1].x) *
-			this.bi[i], -(this.points[i + 1].y - this.points[i - 1].y - this.coeffA[i - 1].y) *
-			this.bi[i]);
+
+			// this.coeffA[i].set(
+			// 	-(this.points[i + 1].x - this.points[i - 1].x - this.coeffA[i - 1].x) *this.bi[i], 
+			// 	-(this.points[i + 1].y - this.points[i - 1].y - this.coeffA[i - 1].y) *this.bi[i]);
+			this.coeffA[i].x = -(this.points[i + 1].x - this.points[i - 1].x - this.coeffA[i - 1].x) *this.bi[i];
+			this.coeffA[i].y = -(this.points[i + 1].y - this.points[i - 1].y - this.coeffA[i - 1].y) *this.bi[i];
 		}
 		for (i = this.numP - 2; i > 0; i--) {
-			this.delta[i].set(this.coeffA[i].x + this.delta[i + 1].x * this.bi[i], this.coeffA[i].y +
-			this.delta[i + 1].y * this.bi[i]);
+
+			// this.delta[i].set(fin
+			// 	this.coeffA[i].x + this.delta[i + 1].x * this.bi[i], 
+			// 	this.coeffA[i].y + this.delta[i + 1].y * this.bi[i]);
+			this.delta[i].x = this.coeffA[i].x + this.delta[i + 1].x * this.bi[i];
+			this.delta[i].y = this.coeffA[i].y + this.delta[i + 1].y * this.bi[i];
+			
 		}
 	},
 

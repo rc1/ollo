@@ -31,7 +31,13 @@ class ColorPointsWebGLRenderer {
     start ( $canvasEl ) {
 
         // Set size
-        this.sizeProp.value = getSize( $canvasEl );
+        this.sizeProp.value = [ window.innerWidth, window.innerHeight ];
+        this.subscriptions.push(
+            Rx.Observable
+               .fromEvent( window , 'resize' )
+               .debounceTime( 100, Rx.Scheduler.requestAnimationFrame )
+               .map( _ => [ window.innerWidth, window.innerHeight ] )
+               .subscribe( size => this.sizeProp.value = size ) );
 
         // Needs Redraw
         const needsRedraw = new ReactiveProperty(false);
@@ -41,13 +47,26 @@ class ColorPointsWebGLRenderer {
 
         // Renderer
         const renderer = new WebGLRenderer( {
-            canvas: $canvasEl[ 0 ],
-            antialias: true,
+            //canvas: $canvasEl[ 0 ],
+            antialias: false,
             autoClear: true,
-            autoClearColor: 0x0000ff // not working?
+            autoClearColor: 0x0000ff, // not working?
+            devicePixelRatio: window.devicePixelRatio || 1
         });
+
+        // Add to body
+        $( 'body' ).append( renderer.domElement );
+
+        // Change rendering to window
+        this.subscriptions.push(
+            this.sizeProp
+                .subscribe( size => {
+                    renderer.setSize( size[ 0 ], size[ 1 ], true );
+                }));
+
+
         // Camera
-        const camera = new OrthographicCamera( 0, this.sizeProp.value[0], 0, this.sizeProp.value[1], 1, 1000 );
+        const camera = new OrthographicCamera( 0, this.sizeProp.value[ 0 ], 0, this.sizeProp.value[ 1 ], 1, 1000 );
         camera.position.z = 10;
         camera.lookAt( new Vector3( 0, 0, 0 ) );
 
@@ -55,24 +74,13 @@ class ColorPointsWebGLRenderer {
         // bind camera and resizes to sizeProp
         this.subscriptions.push(
             this.sizeProp
-                .subscribe( wh => {
-                    //camera.left = wh[ 0 ]/-2;
-                    camera.right = wh[ 0 ];
-                    camera.bottom = wh[ 1 ];
-                    //camera.bottom = wh[ 1 ]/-2;
-                    camera.aspect = wh[ 0 ] / wh[ 1 ];
+                .subscribe( size => {
+                    camera.right = size[ 0 ];
+                    camera.bottom = size[ 1 ];
                     camera.updateProjectionMatrix();
+                    camera.aspect = size[ 0 ] / size[ 1 ];
                     needsRedraw.value = true;
-                    renderer.setSize( wh[ 0 ], wh[ 1 ], false );
                 }));
-
-        // bind sizeProp to windowReszze
-        this.subscriptions.push(
-            Rx.Observable
-               .fromEvent( window , 'resize' )
-               .debounceTime( 100, Rx.Scheduler.requestAnimationFrame )
-               .map( _ => getSize( $canvasEl ) )
-               .subscribe( size => this.sizeProp.value = size ) );
 
         // Texture
         // a texture of a circle
@@ -174,10 +182,6 @@ class ColorPointsWebGLRenderer {
         // clear up
         this.subscriptions.forEach( d => d.unsubscribe() );
     }
-}
-
-function getSize ( $canvasEl ) {
-    return [ $canvasEl.width(), $canvasEl.height() ];
 }
 
 function range ( start, stop ) {

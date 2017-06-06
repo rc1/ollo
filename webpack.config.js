@@ -1,7 +1,8 @@
-const path              = require('path');
-const webpack           = require('webpack');
-const HtmlWebpackPlugin = require('html-webpack-plugin');
-const ExtractTextPlugin = require('extract-text-webpack-plugin');
+const path                = require('path');
+const webpack             = require('webpack');
+const HtmlWebpackPlugin   = require('html-webpack-plugin');
+const ExtractTextPlugin   = require('extract-text-webpack-plugin');
+const CopyWebpackPlugin   = require('copy-webpack-plugin');
 
 module.exports = () => {
 
@@ -13,19 +14,27 @@ module.exports = () => {
         minify   : false
     }));
 
-    // plugins.push( new webpack.optimize.UglifyJsPlugin({
-    //     sourceMap: 'source-map',
-    //     compress: {
-    //         warnings: false
-    //     },
-    //     output: {
-    //         comments: false
-    //     }
-    // }));
+    plugins.push(new CopyWebpackPlugin( [
+        {
+            context: './copy/',
+            from: '**/*',
+            to: '.'
+        }
+    ]));
+
+    plugins.push( new webpack.optimize.UglifyJsPlugin({
+        sourceMap: 'source-map',
+        compress: {
+            warnings: false
+        },
+        output: {
+            comments: false
+        }
+    }));
 
     return {
 
-        devtool: 'source-map',
+        // devtool: 'source-map',
 
         entry: './src/app.js',
 
@@ -42,7 +51,7 @@ module.exports = () => {
                     exclude: /node_modules/,
                     loader: 'babel-loader',
                     query: {
-                        compact: false,
+                        compact: true,
                         presets: [
                             ['es2015', { modules: false }]
                         ]

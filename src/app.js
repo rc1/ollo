@@ -4,15 +4,28 @@ import Physics from './ollo/physics';
 import positions from './ollo/positions';
 import { Color, Vector3, Matrix4 } from './../node_modules/three/build/three.module';
 import { Gestures } from 'rxjs-gestures';
-const toxi = require( './ollo/toxiclibsjs-ollo.js' );
 import ReactiveProperty from './ollo/reactive-property.js';
+const toxi = require( './ollo/toxiclibsjs-ollo.js' );
+const glMatrix = require( "./../node_modules/gl-matrix/src/gl-matrix/common.js");
+const mat4 = require( "./../node_modules/gl-matrix/src/gl-matrix/mat4.js");
+const vec3 = require( "./../node_modules/gl-matrix/src/gl-matrix/vec3.js");
 
 class Position {
     constructor ( ) {
         this.toScreenMatrix = new Matrix4();
         this.toPhysicsMatrix = new Matrix4();
 
-        this._threeVec = new Vector3();
+        this.toSceenGlMatrix = new Float32Array([ 1, 0, 0, 0,
+                                                  0, 1, 0, 0,
+                                                  0, 0, 1, 0,
+                                                  0, 0, 0, 1 ]);
+
+        this.toPhysicsGlMatrix = new Float32Array([ 1, 0, 0, 0,
+                                                    0, 1, 0, 0,
+                                                    0, 0, 1, 0,
+                                                    0, 0, 0, 1 ]);
+
+        this._point = [ 0, 0, 0 ];
     }
     setSize ( points, width, height ) {
 
@@ -25,7 +38,7 @@ class Position {
         // Fitting
         const xPadding = 0.5;
         const yPadding = 0.5;
-        const scale = fitScaleRatio( xMax + xPadding, yMax + yPadding, width, height );
+        const scale = this.fitScaleRatio( xMax + xPadding, yMax + yPadding, width, height );
 
         const scaleMatrix = new Matrix4().makeScale( scale, scale, 1 );
         const translateMatrix = new Matrix4().makeTranslation( ( width - ( xMax - xMin ) * scale ) / 2, ( height - ( yMax - yMin  ) * scale ) / 2, 0 );
@@ -44,36 +57,50 @@ class Position {
                                   0,0,0,1 );
 
         this.toPhysicsMatrix.getInverse( this.toScreenMatrix );
+
+        mat4.copy( this.toSceenGlMatrix, this.toScreenMatrix.elements );
+        mat4.copy( this.toPhysicsGlMatrix, this.toPhysicsMatrix.elements );
     }
     copyFromScreenToPhysics ( screenPoint, physicsPoint ) {
-        this._threeVec.set( screenPoint[ 0 ], screenPoint[ 1 ], 0 );
-        this._threeVec.applyMatrix4( this.toPhysicsMatrix );
-        physicsPoint.x = this._threeVec.x;
-        physicsPoint.y = this._threeVec.y;
+        this._point[ 0 ] = screenPoint[ 0 ];
+        this._point[ 1 ] = screenPoint[ 1 ];
+        this._point[ 2 ] =  0;
+        vec3.transformMat4( this._point, this._point, this.toPhysicsGlMatrix );
+        physicsPoint.x = this._point[ 0 ];
+        physicsPoint.y = this._point[ 1 ];
     }
     copyFromPhysicsToScreen ( physicsPoint, screenPoint ) {
-        this._threeVec.set( physicsPoint.x, physicsPoint.y, 0 );
-        this._threeVec.applyMatrix4( this.toScreenMatrix );
-        // console.log( this._threeVec );
-        screenPoint[ 0 ] = this._threeVec.x;
-        screenPoint[ 1 ] = this._threeVec.y;
+        this._point[ 0 ] = physicsPoint.x;
+        this._point[ 1 ] =  physicsPoint.y;
+        this._point[ 2 ] =  0;
+        vec3.transformMat4( this._point, this._point, this.toSceenGlMatrix );
+        screenPoint[ 0 ] = this._point[ 0 ];
+        screenPoint[ 1 ] = this._point[ 1 ];
+    }
+    fitScaleRatio (width, height, boundsWidth, boundsHeight) {
+        var widthScale = boundsWidth / width;
+        var heightScale = boundsHeight / height;
+        return Math.min(widthScale, heightScale);
     }
 }
 
 $( function () {
 
-    const curveRes = 20; // this requires
-
-    // Position
-    var position = new Position( positions.logo.points );
-    position.setSize( positions.logo.points, $( '#ollo' ).width(), $( '#ollo' ).height() );
+    // Config
+    const curveRes = 100; // this requires
 
     // Create the physics
     const physics = new Physics( positions.logo.points );
 
     // Create the point renderer
     const renderer = new ColorPointWebGLRenderer();
-    renderer.start( $( '#ollo' ) );
+    renderer.start();
+
+    // Position
+    var position = new Position( positions.logo.points );
+    renderer.sizeProp.subscribe( size => {
+        position.setSize( positions.logo.points, window.innerWidth, window.innerHeight );
+    });
 
     // Add the inital points
     let pointsAsToxiVec = physics.spline.computeVertices( curveRes );
@@ -85,7 +112,7 @@ $( function () {
         // Change the point to it's position value 0:1
         .map( ( p, idx, { length: len } ) => idx/(len-1) )
         // Get the color for the position
-        .map( t => {
+        .map( (t, idx ) => {
             const gradientPoints = positions.logo.gradientPoints;
 
             let lowGradientPoint = gradientPoints[ 0 ];
@@ -112,7 +139,7 @@ $( function () {
     renderer.colorsProp.value = colors;
 
     // Start rendering from physics
-    physics.frameCount.subscribe( numOfFrame => {
+    physics.frameCount.throttleTime( 1/40 * 1000 ).subscribe( numOfFrame => {
 
         // Computation of posisitons
         const pointsAsToxiVec = physics.spline.computeVertices( curveRes );
@@ -125,7 +152,7 @@ $( function () {
             position.copyFromPhysicsToScreen( pointsAsToxiVec[ idx ], rendererPArrays[ idx ] );
         }
 
-        // Update the reference, triggering a Redraw
+        // Update the reference, triggering a redraw
         renderer.pointsProp.value = rendererPArrays;
 
     });
@@ -146,7 +173,7 @@ $( function () {
     const touchMap = new Map();
 
     Gestures
-        .start( $( '#ollo' )[ 0 ] )
+        .start( $( 'canvas' )[ 0 ] )
         .subscribe( event => {
             const mouse = new toxi.geom.Vec2D();
             position.copyFromScreenToPhysics( [ event.pageX, event.pageY ], mouse );
@@ -159,7 +186,7 @@ $( function () {
         });
 
     Gestures
-        .move( $( '#ollo' )[ 0 ] )
+        .move( $( 'canvas' )[ 0 ] )
         .subscribe( event => {
 
             const mouse = new toxi.geom.Vec2D();
@@ -175,7 +202,7 @@ $( function () {
         });
 
     Gestures
-        .end( $( '#ollo' )[ 0 ] )
+        .end( $( 'canvas' )[ 0 ] )
         .subscribe( event => {
             var particle = touchMap.get( event.identifier );
 
@@ -186,8 +213,6 @@ $( function () {
             }
         });
 
-
-
 });
 
 function inverseLerp ( start, end, scalar ) {
@@ -197,188 +222,3 @@ function inverseLerp ( start, end, scalar ) {
 function lerp (start, end, scalar) {
     return start + (end - start) * scalar;
 }
-
-function fitScaleRatio (width, height, boundsWidth, boundsHeight) {
-    var widthScale = boundsWidth / width;
-    var heightScale = boundsHeight / height;
-    return Math.min(widthScale, heightScale);
-}
-
-// function start () {
-//     return new Promise( ( resolve, reject ) => {
-//
-//         var app = {};
-//
-//         Physics
-//            .make()
-//            .then( physics => {
-//                physics.initalPoints = positions.logo.points;
-//                return Physics.init( physics );
-//            })
-//            .then( physics => {
-//                app.physics = physics;
-//                return Renderer.make();
-//            })
-//            .then( renderer => {
-//                renderer.$canvasEl = $( '#ollo' );
-//                renderer.positions = app.physics.vertices.map( vec2ToPArray );
-//                renderer.colors = pp.physics.vertices
-//                    .map( ( _, idx, { length: len } ) => idx / ( len - 1 ) )
-//                    .map( );
-//                return Renderer.init( renderer );
-//            })
-//            .then( renderer => {
-//                app.renderer = renderer;
-//                resolve( app );
-//            })
-//            .catch( reject );
-//
-//     });
-// }
-//
-// function applyVec2ToPArray ( vec, pArray ) {
-//     pArray[ 0 ] = vec.x;
-//     pArray[ 1 ] = vec.y;
-// }
-//
-// function applyPArrayToVec2 ( pArray, vec ) {
-//     vec.x = pArray[ 0 ];
-//     vec.y = pArray[ 1 ];
-// }
-//
-// function vec2ToPArray ( vec ) {
-//     return [ vec.x, vec.y ];
-// }
-//
-
-//
-// var data = [
-//   [
-//     49,
-//     566
-//   ],
-//   [
-//     145,
-//     584
-//   ],
-//   [
-//     213,
-//     513
-//   ],
-//   [
-//     152,
-//     438
-//   ],
-//   [
-//     72,
-//     497
-//   ],
-//   [
-//     131,
-//     583
-//   ],
-//   [
-//     252,
-//     528
-//   ],
-//   [
-//     293,
-//     381
-//   ],
-//   [
-//     264,
-//     262
-//   ],
-//   [
-//     215,
-//     329
-//   ],
-//   [
-//     234,
-//     525
-//   ],
-//   [
-//     331,
-//     571
-//   ],
-//   [
-//     376,
-//     399
-//   ],
-//   [
-//     330,
-//     294
-//   ],
-//   [
-//     305,
-//     470
-//   ],
-//   [
-//     401,
-//     577
-//   ],
-//   [
-//     485,
-//     574
-//   ],
-//   [
-//     520,
-//     502
-//   ],
-//   [
-//     458,
-//     438
-//   ],
-//   [
-//     383,
-//     501
-//   ],
-//   [
-//     454,
-//     587
-//   ],
-//   [
-//     566,
-//     551
-//   ]
-// ];
-//
-// // import { Box2, Vector2 } from 'three';
-//
-// var box = new Box2( new Vector2(0,0), new Vector2(0,0) );
-//
-// box.setFromPoints( data.map( p => new Vector2(p[0],p[1]) ) );
-//
-// var size = box.getSize();
-// var max = Math.max( size.x, size.y );
-//
-// console.log( JSON.stringify( data.map( p => {
-//     p[0] = inverseLerp( box.min.x, box.min.x + max, p[ 0 ] );
-//     p[1] = inverseLerp( box.min.y, box.min.y + max, p[ 1 ] );
-//     return p;
-// } ) ) );
-//
-//
-// function inverseLerp ( start, end, scalar ) {
-// 	return ( scalar - start ) / ( end - start );
-// }
-
-//
-// // var pointsFlattened = data.reduce( ( acc, point ) => {
-// //     acc.push( point[ 0 ] );
-// //     acc.push( point[ 1 ] );
-// //     return acc;
-// // }, [] );
-// //
-// // var max = pointsFlattened.reduce( (a, b) => Math.max( a, b ), Number.MIN_VALUE );
-// // var min = pointsFlattened.reduce( (a, b) => Math.min( a, b ), Number.MAX_VALUE );
-// //
-// // var reformatted = data.map( p => {
-// //     p[ 0 ] = inverseLerp( min, max, p[ 0 ] );
-// //     p[ 1 ] = inverseLerp( min, max, p[ 1 ] );
-// //     return p;
-// // } );
-// //
-// // console.log( min, max );
-// // console.log( JSON.stringify( reformatted ) );
-//

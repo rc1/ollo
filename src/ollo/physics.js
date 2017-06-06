@@ -31,7 +31,7 @@ class Physics {
         this.frameCount = new ReactiveProperty( 0 );
         this.subscriptions.push( Rx.Observable
             .interval(0, Rx.Scheduler.animationFrame )
-            .take(100)
+            .throttleTime( 1/40 * 1000 )
             .subscribe( () => {
                 this.verletPhysics2D.update();
                 this.frameCount.value++;
