@@ -42,6 +42,7 @@ class ColorPointsWebGLRenderer {
         // Renderer
         const renderer = new WebGLRenderer( {
             canvas: $canvasEl[ 0 ],
+            antialias: true,
             autoClear: true,
             autoClearColor: 0x0000ff // not working?
         });
@@ -165,15 +166,9 @@ class ColorPointsWebGLRenderer {
             needsRedraw
                 .subscribeOn( Rx.Scheduler.animationFrame )
                 .subscribe( _ => {
-                    console.log( 'redrawing' );
                     renderer.render( scene, camera );
                 })
         );
-        // this.subscriptions.push(
-        //     Rx.Observable.interval(0, Rx.Scheduler.animationFrame).take(10).subscribe( _ => {
-        //         renderer.render( scene, camera );
-        //     })
-        // );
     }
     stop () {
         // clear up

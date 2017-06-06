@@ -3630,11 +3630,15 @@ Spline2D.prototype = {
 			this.bernstein = new BernsteinPolynomial(res);
 		}
 		var bst = this.bernstein;
-		this.vertices = [];
 		this.findCPoints();
 		var deltaP = new Vec2D();
 		var deltaQ = new Vec2D();
         res--;
+        var verticeCount = (this.numP - 1) * res + 1;
+        if ( typeof(this.vertices) == 'undefined' || this.vertices.length != verticeCount ) {
+        	this.vertices = Array.apply( null, Array( verticeCount ) ).map( function () { return new Vec2D(); } );
+        }
+		var vertexIdx = 0;
 		for (var i = 0; i < this.numP - 1; i++) {
 			var p = this.points[i];
 			var q = this.points[i + 1];
@@ -3647,10 +3651,13 @@ Spline2D.prototype = {
 				var y = p.y * bst.b0[k] + deltaP.y * bst.b1[k] +
 				deltaQ.y * bst.b2[k] +
 				q.y * bst.b3[k];
-				this.vertices.push(new Vec2D(x, y));
+				this.vertices[ vertexIdx ].x = x;
+				this.vertices[ vertexIdx ].y = y;
+				vertexIdx++;
 			}
 		}
-        this.vertices.push(this.points[this.points.length-1].copy());
+		this.vertices[ vertexIdx ].x = this.vertices[ vertexIdx - 1 ].x;
+		this.vertices[ vertexIdx ].y = this.vertices[ vertexIdx - 1 ].y;
 		return this.vertices;
 	},
 

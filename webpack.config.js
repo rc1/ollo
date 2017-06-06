@@ -22,7 +22,7 @@ module.exports = () => {
     //         comments: false
     //     }
     // }));
-   
+
     return {
 
         devtool: 'source-map',
@@ -42,7 +42,7 @@ module.exports = () => {
                     exclude: /node_modules/,
                     loader: 'babel-loader',
                     query: {
-                        compact: true,
+                        compact: false,
                         presets: [
                             ['es2015', { modules: false }]
                         ]
