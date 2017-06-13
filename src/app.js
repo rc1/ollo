@@ -5,6 +5,7 @@ import positions from './ollo/positions';
 import { Color, Vector3, Matrix4 } from './../node_modules/three/build/three.module';
 import { Gestures } from 'rxjs-gestures';
 import ReactiveProperty from './ollo/reactive-property.js';
+import * as screenfull from 'screenfull';
 const toxi = require( './ollo/toxiclibsjs-ollo.js' );
 const glMatrix = require( "./../node_modules/gl-matrix/src/gl-matrix/common.js");
 const mat4 = require( "./../node_modules/gl-matrix/src/gl-matrix/mat4.js");
@@ -36,12 +37,12 @@ class Position {
         const yMax = points.reduce( ( acc, p ) => p[1] > acc ? p[1] : acc, Number.MIN_VALUE  );
 
         // Fitting
-        const xPadding = 0.5;
-        const yPadding = 0.5;
-        const scale = this.fitScaleRatio( xMax + xPadding, yMax + yPadding, width, height );
+        const xPadding = 0.25;
+        const yPadding = 0.25;
+        this.scale = this.fitScaleRatio( xMax + xPadding, yMax + yPadding, width, height );
 
-        const scaleMatrix = new Matrix4().makeScale( scale, scale, 1 );
-        const translateMatrix = new Matrix4().makeTranslation( ( width - ( xMax - xMin ) * scale ) / 2, ( height - ( yMax - yMin  ) * scale ) / 2, 0 );
+        const scaleMatrix = new Matrix4().makeScale( this.scale, this.scale, 1 );
+        const translateMatrix = new Matrix4().makeTranslation( ( width - ( xMax - xMin ) * this.scale ) / 2, ( height - ( yMax - yMin  ) * this.scale ) / 2, 0 );
 
         this.toScreenMatrix.set( 1,0,0,0,
                                  0,1,0,0,
@@ -77,6 +78,9 @@ class Position {
         screenPoint[ 0 ] = this._point[ 0 ];
         screenPoint[ 1 ] = this._point[ 1 ];
     }
+    getPointSize () {
+        return this.scale * 0.100;
+    }
     fitScaleRatio (width, height, boundsWidth, boundsHeight) {
         var widthScale = boundsWidth / width;
         var heightScale = boundsHeight / height;
@@ -86,8 +90,17 @@ class Position {
 
 $( function () {
 
+    // iOS
+    document.documentElement.addEventListener('touchmove', function (event) {
+        event.preventDefault();
+    }, false);
+
+
     // Config
     const curveRes = 100; // this requires
+
+    // Position
+    const position = new Position( positions.logo.points );
 
     // Create the physics
     const physics = new Physics( positions.logo.points );
@@ -96,15 +109,30 @@ $( function () {
     const renderer = new ColorPointWebGLRenderer();
     renderer.start();
 
-    // Position
-    var position = new Position( positions.logo.points );
+    // Set the physics size
+    const updatePhysicsWorldBounds = () => {
+        const xy = new toxi.geom.Vec2D();
+        position.copyFromScreenToPhysics( [0,0], xy );
+        const size = new toxi.geom.Vec2D();
+        position.copyFromScreenToPhysics( [ window.innerWidth, window.innerHeight ], size );
+        physics.verletPhysics2D.setWorldBounds( new toxi.geom.Rect( xy.x, xy.y, size.x + Math.abs(xy.x), size.y + Math.abs(xy.y) ) );
+    };
+
+    // Set positions size
     renderer.sizeProp.subscribe( size => {
         position.setSize( positions.logo.points, window.innerWidth, window.innerHeight );
+        renderer.pointSizeProp.value = position.getPointSize();
+        updatePhysicsWorldBounds();
     });
 
     // Add the inital points
     let pointsAsToxiVec = physics.spline.computeVertices( curveRes );
-    const pointsPArray = pointsAsToxiVec.map( p => [ p.x, p.y ] );
+    const pointsPArray = pointsAsToxiVec.reduce( ( acc, p, idx, { length: total } ) => {
+        if ( idx > curveRes  && idx < total - curveRes ) {
+            acc.push( p => [ p.x, p.y ] );
+        }
+        return acc;
+    }, [] );
     renderer.pointsProp.value = pointsPArray;
 
     // Add the colors
@@ -148,8 +176,8 @@ $( function () {
         const rendererPArrays = renderer.pointsProp.value;
 
         // Update the positions
-        for ( let idx = 0; idx <  Math.min( rendererPArrays.length, pointsAsToxiVec.length ); idx++ ) {
-            position.copyFromPhysicsToScreen( pointsAsToxiVec[ idx ], rendererPArrays[ idx ] );
+        for ( let idx = 0; idx < rendererPArrays.length; idx++ ) {
+            position.copyFromPhysicsToScreen( pointsAsToxiVec[ idx + curveRes ], rendererPArrays[ idx ] );
         }
 
         // Update the reference, triggering a redraw
@@ -162,31 +190,37 @@ $( function () {
     // Return to home
     const interaction = new ReactiveProperty(true);
 
+    let cancelSpringBack = null;
+
     interaction
         .sampleTime( 10000 )
         .delay( 3000 )
         .subscribe( () => {
-            physics.springBack();
+            cancelSpringBack = physics.springBack();
         });
 
     // Touches
     const touchMap = new Map();
 
     Gestures
-        .start( $( 'canvas' )[ 0 ] )
+        .start( window )
         .subscribe( event => {
+            if ( cancelSpringBack !== null ) {
+                cancelSpringBack();
+                cancelSpringBack = null;
+            }
+
             const mouse = new toxi.geom.Vec2D();
             position.copyFromScreenToPhysics( [ event.pageX, event.pageY ], mouse );
             const particle = physics.controlParticleNearest( mouse );
             particle.lock();
             particle.set( mouse.x, mouse.y );
-            console.log( "setting particle for", event.identifier );
             touchMap.set( event.identifier, particle );
             interaction.value = true;
         });
 
     Gestures
-        .move( $( 'canvas' )[ 0 ] )
+        .move( window )
         .subscribe( event => {
 
             const mouse = new toxi.geom.Vec2D();
@@ -195,6 +229,10 @@ $( function () {
             var particle = touchMap.get( event.identifier );
 
             if ( particle ) {
+                if ( cancelSpringBack !== null ) {
+                    cancelSpringBack();
+                    cancelSpringBack = null;
+                }
                 particle.lock();
                 particle.set( mouse.x, mouse.y );
                 interaction.value = true;
@@ -202,8 +240,13 @@ $( function () {
         });
 
     Gestures
-        .end( $( 'canvas' )[ 0 ] )
+        .end( window )
         .subscribe( event => {
+            if ( cancelSpringBack !== null ) {
+                cancelSpringBack();
+                cancelSpringBack = null;
+            }
+
             var particle = touchMap.get( event.identifier );
 
             if ( particle ) {
@@ -212,6 +255,14 @@ $( function () {
                 interaction.value = true;
             }
         });
+
+    // fullscreen
+    $( window ).keypress(function() {
+        if (screenfull.enabled) {
+        	screenfull.request();
+        }
+    });
+
 
 });
 

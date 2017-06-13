@@ -64,7 +64,6 @@ class ColorPointsWebGLRenderer {
                     renderer.setSize( size[ 0 ], size[ 1 ], true );
                 }));
 
-
         // Camera
         const camera = new OrthographicCamera( 0, this.sizeProp.value[ 0 ], 0, this.sizeProp.value[ 1 ], 1, 1000 );
         camera.position.z = 10;
@@ -90,6 +89,7 @@ class ColorPointsWebGLRenderer {
             texture.needsUpdate = true;
             needsRedraw.value = true;
         };
+        texture.minFilter = Constants.NearestFilter;
         texture.image = image;
 
         // Material

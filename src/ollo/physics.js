@@ -3,11 +3,11 @@ import Rx from 'rxjs';
 import ReactiveProperty from './reactive-property.js';
 
 class Physics {
-    constructor ( initialPoints ) {
+    constructor ( initialPoints  ) {
 
         // World
         this.verletPhysics2D = new toxi.physics2d.VerletPhysics2D();
-        this.verletPhysics2D.setWorldBounds(new toxi.geom.Rect(-0.3, -0.3, 1.3, 1.3));
+
         this.verletPhysics2D.setNumIterations( 2 );
 
         // Starting points
@@ -52,19 +52,44 @@ class Physics {
     releaseControlOfParticle( p ) {
         p.unlock();
     }
+    // Returns a function to cancel the sping back
     springBack () {
-        Rx.Observable
-            .from( this.startingPositions )
-            .zip( Rx.Observable.from( this.pointList ) )
-            .map( pair => new toxi.physics2d.VerletConstrainedSpring2D( pair[0], pair[1], 0, 0.01 ) )
-            .do( spring => this.verletPhysics2D.addSpring( spring ) )
-            .delay( 6000 )
-            .subscribe( spring => {
-                this.verletPhysics2D.removeSpring( spring );
-                this.pointList.forEach( p => p.clearVelocity() );
-                this.pointList.forEach( p => p.clearForce() );
-                //this.pointList.forEach( ( p, idx ) => p.set( this.startingPositions[ idx ].x, this.startingPositions[ idx ].y ) );
-            });
+        const self = this;
+        return (function () {
+            const springs = [];
+            let cancel = new Rx.Subject();
+            Rx.Observable
+                .from( self.startingPositions )
+                .zip( Rx.Observable.from( self.pointList ) )
+                .map( pair => new toxi.physics2d.VerletConstrainedSpring2D( pair[0], pair[1], 0, 0.013 * 4 ) )
+                .do( spring => self.verletPhysics2D.addSpring( spring ) )
+                .do( spring => springs.push( spring ) )
+                .delay( 120000 )
+                .takeUntil( cancel )
+                .subscribe( spring => {
+                    springs.forEach( spring => self.verletPhysics2D.removeSpring( spring ) );
+                    self.pointList.forEach( ( p, idx ) => {
+                        p.x = self.startingPositions[ idx ].x;
+                        p.y = self.startingPositions[ idx ].y;
+                        p.clearVelocity();
+                        p.clearForce();
+                    });
+                },
+                (err) => {},
+                ()=> {
+                    springs.forEach( spring => self.verletPhysics2D.removeSpring( spring ) );
+                } );
+
+            return () => {
+                cancel.next( "" );
+                cancel.unsubscribe();
+            };
+
+        }());
+
+
+
+
     }
 }
 

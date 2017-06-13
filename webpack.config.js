@@ -6,43 +6,14 @@ const CopyWebpackPlugin   = require('copy-webpack-plugin');
 
 module.exports = () => {
 
-    const plugins = [];
+    const isProduction = process.env.NODE_ENV == 'production';
 
-    plugins.push(new HtmlWebpackPlugin( {
-        template : './src/index.pug',
-        inject   : true,
-        minify   : false
-    }));
-
-    plugins.push(new CopyWebpackPlugin( [
-        {
-            context: './copy/',
-            from: '**/*',
-            to: '.'
-        }
-    ]));
-
-    plugins.push( new webpack.optimize.UglifyJsPlugin({
-        sourceMap: 'source-map',
-        compress: {
-            warnings: false
-        },
-        output: {
-            comments: false
-        }
-    }));
-
-    return {
-
-        // devtool: 'source-map',
-
+    const config = {
         entry: './src/app.js',
-
         output: {
             path: path.join( __dirname, 'bin' ),
             filename: 'app.bundle.js'
         },
-
         module: {
             loaders: [
                 // JS
@@ -70,7 +41,38 @@ module.exports = () => {
                 }
             ]
         },
-
-        plugins: plugins
+        plugins: []
     };
+
+    if ( !isProduction ) {
+        config.devtool = 'source-map';
+    }
+
+    config.plugins.push(new HtmlWebpackPlugin( {
+        template : './src/index.pug',
+        inject   : true,
+        minify   : false
+    }));
+
+    config.plugins.push(new CopyWebpackPlugin( [
+        {
+            context: './copy/',
+            from: '**/*',
+            to: '.'
+        }
+    ]));
+
+    if ( isProduction ) {
+        config.plugins.push( new webpack.optimize.UglifyJsPlugin({
+            sourceMap: 'source-map',
+            compress: {
+                warnings: false
+            },
+            output: {
+                comments: false
+            }
+        }));
+    }
+
+    return config;
 };
