@@ -3,7 +3,7 @@
 * http://haptic-data.com/toxiclibsjs
 * Created by [Kyle Phillips](http://haptic-data.com),
 * based on original work by [Karsten Schmidt](http://toxiclibs.org).
-* Licensed [GPLv2](http://www.gnu.org/licenses/lgpl-2.1.html) 
+* Licensed [GPLv2](http://www.gnu.org/licenses/lgpl-2.1.html)
 */
 (function(f){if(typeof exports==="object"&&typeof module!=="undefined"){module.exports=f()}else if(typeof define==="function"&&define.amd){define([],f)}else{var g;if(typeof window!=="undefined"){g=window}else if(typeof global!=="undefined"){g=global}else if(typeof self!=="undefined"){g=self}else{g=this}g.toxi = f()}})(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
 module.exports = exports = {"geom":{},"physics2d":{}};
@@ -834,7 +834,7 @@ IsectData3D.prototype = {
 		this.dir = new Vec3D();
 		this.normal = new Vec3D();
 	},
-	
+
 	toString: function(){
 		var s = "isec: "+this.isIntersection;
 		if(this.isIntersection){
@@ -2738,7 +2738,7 @@ Quaternion.prototype = {
 		res.x = this.w * q2.x + x * q2.w + y * q2.z - z * q2.y;
 		res.y = this.w * q2.y + y * q2.w + z * q2.x - x * q2.z;
 		res.z = this.w * q2.z + z * q2.w + x * q2.y - y * q2.x;
-		
+
 		return res;
 	},
 	normalize: function(){
@@ -2825,7 +2825,7 @@ Quaternion.prototype = {
 		var wx = this.w * x2;
 		var wy = this.w * y2;
 		var wz = this.w * z2;
-		
+
 		var st = x2 +','+y2+','+z2+','+xx+','+xy+','+xz+','+yy+','+yz+','+zz+','+wx+','+wy+','+wz;
 		return result.set(
 			1 - (yy + zz), xy - wz, xz + wy, 0, xy + wz,
@@ -2836,7 +2836,7 @@ Quaternion.prototype = {
 	toString: function(){
 		return "{axis: ["+this.x+","+this.y+","+this.z+"], w: "+this.w+"}";
 	}
-	
+
 };
 
 Quaternion.DOT_THRESHOLD = 0.9995;
@@ -2853,23 +2853,23 @@ Quaternion.createFromEuler = function(pitch,yaw,roll){
 	pitch *= 0.5;
 	yaw *=0.5;
 	roll *= 0.5;
-	
+
 	var sinPitch = mathUtils.sin(pitch),
 		cosPitch = mathUtils.cos(pitch),
 		sinYaw = mathUtils.sin(yaw),
 		cosYaw = mathUtils.cos(yaw),
 		sinRoll = mathUtils.sin(roll),
 		cosRoll = mathUtils.cos(roll);
-	
+
 	var cosPitchCosYaw = cosPitch * cosYaw,
 		sinPitchSinYaw = sinPitch * sinYaw;
-		
+
 		var q = new Quaternion();
 		q.x = sinRoll * cosPitchCosYaw - cosRoll * sinPitchSinYaw;
 		q.y = cosRoll * sinPitch * cosYaw + sinRoll * cosPitch * sinYaw;
 		q.z = cosRoll * cosPitch * sinYaw - sinRoll * sinPitch * cosYaw;
 		q.w = cosRoll * cosPitchCosYaw + sinRoll * sinPitchSinYaw;
-		
+
 		return q;
 };
 
@@ -2877,7 +2877,7 @@ Quaternion.createFromMatrix = function(m){
 	var s = 0.0;
 	var q = [];
 	var trace = m.matrix[0][0] + m.matrix[1][1] + m.matrix[2][2];
-	
+
 	if(trace > 0.0){
 		s = Math.sqrt(trace + 1.0);
 		q[3] = s * 0.5;
@@ -2886,7 +2886,7 @@ Quaternion.createFromMatrix = function(m){
 		q[1] = (m.matrix[2][0] - m.matrix[0][2] * s);
 		q[2] = (m.matrix[0][1] - m.matrix[1][0] * s);
 	} else {
-		
+
 		var nxt = [ 1, 2, 0 ];
         var i = 0, j = 0, k = 0;
 
@@ -2908,10 +2908,10 @@ Quaternion.createFromMatrix = function(m){
         q[j] = (m.matrix[i][j] + m.matrix[j][i]) * s;
         q[k] = (m.matrix[i][k] + m.matrix[k][i]) * s;
     }
-    
+
      return new Quaternion(q[3],q[0],q[1],q[2]);
  };
- 
+
  Quaternion.getAlignmentQuat = function(dir,forward){
 		var target = dir.getNormalized(),
 			axis = forward.cross(target),
@@ -3676,7 +3676,7 @@ Spline2D.prototype = {
 		d0 = this.delta[0];
 
 		// this.coeffA[1].set(
-		// 	(p2.x - p0.x - d0.x) * this.tightness, 
+		// 	(p2.x - p0.x - d0.x) * this.tightness,
 		// 	(p2.y - p0.y - d0.y) * this.tightness);
 		this.coeffA[1].x = (p2.x - p0.x - d0.x) * this.tightness;
 		this.coeffA[1].y = (p2.y - p0.y - d0.y) * this.tightness;
@@ -3685,7 +3685,7 @@ Spline2D.prototype = {
 			this.bi[i] = -1 / (this.invTightness + this.bi[i - 1]);
 
 			// this.coeffA[i].set(
-			// 	-(this.points[i + 1].x - this.points[i - 1].x - this.coeffA[i - 1].x) *this.bi[i], 
+			// 	-(this.points[i + 1].x - this.points[i - 1].x - this.coeffA[i - 1].x) *this.bi[i],
 			// 	-(this.points[i + 1].y - this.points[i - 1].y - this.coeffA[i - 1].y) *this.bi[i]);
 			this.coeffA[i].x = -(this.points[i + 1].x - this.points[i - 1].x - this.coeffA[i - 1].x) *this.bi[i];
 			this.coeffA[i].y = -(this.points[i + 1].y - this.points[i - 1].y - this.coeffA[i - 1].y) *this.bi[i];
@@ -3693,11 +3693,11 @@ Spline2D.prototype = {
 		for (i = this.numP - 2; i > 0; i--) {
 
 			// this.delta[i].set(fin
-			// 	this.coeffA[i].x + this.delta[i + 1].x * this.bi[i], 
+			// 	this.coeffA[i].x + this.delta[i + 1].x * this.bi[i],
 			// 	this.coeffA[i].y + this.delta[i + 1].y * this.bi[i]);
 			this.delta[i].x = this.coeffA[i].x + this.delta[i + 1].x * this.bi[i];
 			this.delta[i].y = this.coeffA[i].y + this.delta[i + 1].y * this.bi[i];
-			
+
 		}
 	},
 
@@ -3921,17 +3921,17 @@ Triangle3D.prototype = {
         // return u * a + v * b + w * c;
         return this.a.scale(u).addSelf(this.b.scale(v)).addSelf(this.c.scale(w));
     },
-    
+
     computeCentroid: function() {
         this.centroid = this.a.add(this.b).addSelf(this.c).scaleSelf(1 / 3);
         return this.centroid;
     },
-    
+
     computeNormal: function() {
         this.normal = this.a.sub(this.c).crossSelf(this.a.sub(this.b)).normalize();
         return this.normal;
     },
-    
+
     containsPoint: function(p) {
         if (p.equals(this.a) || p.equals(this.b) || p.equals(this.c)) {
             return true;
@@ -3998,7 +3998,7 @@ Triangle3D.prototype = {
     isClockwiseInYZ: function() {
         return Triangle3D.isClockwiseInXY(this.a, this.b, this.c);
     },
-    
+
     set: function(a2, b2, c2) {
         this.a = a2;
         this.b = b2;
@@ -4121,7 +4121,7 @@ var IsectData3D = require('./IsectData3D');
 			this.a.addFaceNormal(this.normal);
 			this.b.addFaceNormal(this.normal);
 			this.c.addFaceNormal(this.normal);
-			
+
 			if(uvA !== undefined){
 				this.uvA = uvA;
 				this.uvB = uvB;
@@ -4140,11 +4140,11 @@ var IsectData3D = require('./IsectData3D');
 				this.b = t;
 				this.normal.invert();
 			},
-			
+
 			getCentroid: function() {
 				return this.a.add(this.b).addSelf(this.c).scale(1.0 / 3);
 			},
-			
+
 			getClass: function(){
 				return "Face";
 			},
@@ -5917,7 +5917,7 @@ var SubdivisionStrategy = require('./SubdivisionStrategy');
 
 },{"../../../internals":30,"./SubdivisionStrategy":28}],28:[function(require,module,exports){
 var EdgeLengthComparator = require('./EdgeLengthComparator');
-	
+
 	var SubdivisionStrategy, proto;
 	SubdivisionStrategy = function(){
 		this._order = SubdivisionStrategy.DEFAULT_ORDERING;
@@ -8102,7 +8102,7 @@ method.
   3 - VerletPhysics2D physics, Array<VerletParticle2D> plist, Number strength
   6 - VerletPhysics2D physic, Vec2D pos, Vec2D step, Number num, Number mass, Number strength
   */
-  
+
 var	ParticleString2D = function(){
 	var opts = {
 		physics: undefined,
@@ -8140,18 +8140,18 @@ var	ParticleString2D = function(){
 	if(!is6ParamConstructor && opts.plist === undefined){
 		throw new Error("Incorrect Parameters, please supply plist or num, pos, step & mass");
 	}
-	
-	
+
+
 	this.physics = opts.physics;
 	this.links = [];
-	
+
 	var prev,
 		p,
 		s,
 		strength,
 		i = 0;
-	
-	
+
+
 	if(is6ParamConstructor){
 		var pos = opts.pos.copy(),
 			step = opts.step,
@@ -8159,7 +8159,7 @@ var	ParticleString2D = function(){
 			len = step.magnitude();
 		this.particles = [];
 		strength = opts.strength;
-		
+
 		for(i = 0; i < opts.num; i++){
 			p = new VerletParticle2D(pos.copy(),mass);
 			this.particles.push(p);
@@ -8176,19 +8176,19 @@ var	ParticleString2D = function(){
 		strength = opts.strength;
 		this.particles = opts.plist || [];
 
-		
+
 		for(i = 0; i < this.particles.length; i++){
 			p = this.particles[i];
 			this.physics.addParticle(p);
 			if(prev !== undefined){
 				s = this.createSpring(prev,p,prev.distanceTo(p),strength);
 				this.links.push(s);
-				this.physics.addSpring(s);	
+				this.physics.addSpring(s);
 			}
 			prev = p;
 		}
 	}
- }; 
+ };
 ParticleString2D.prototype = {
 	clear: function(){
 		for(var i = 0, len = this.links.length; i < len; i++){
@@ -8200,15 +8200,15 @@ ParticleString2D.prototype = {
 	createSpring: function(a,b,len,strength){
 		return new VerletSpring2D(a,b,len,strength);
 	},
-	
+
 	getHead: function(){
 		return this.particles[0];
 	},
-	
+
 	getNumParticles: function(){
 		return this.particles.length;
 	},
-	
+
 	getTail: function(){
 		return this.particles[this.particles.length-1];
 	}
@@ -8665,32 +8665,32 @@ VerletSpring2D.prototype = {
 	getRestLength: function(){
 		return this.restLength;
 	},
-	
+
 	getStrength: function(){
 		return this.strength;
 	},
-	
+
 	lockA: function(s){
 		this.isALocked = s;
 		return this;
 	},
-	
+
 	lockB: function(s){
 		this.isBLocked = s;
 		return this;
 	},
-	
+
 	setRestLength: function(len){
 		this.restLength = len;
 		this.restLengthSquared = len * len;
 		return this;
 	},
-	
+
 	setStrength: function(strength){
 		this.strength = strength;
 		return this;
 	},
-	
+
 	update: function(applyConstraints){ //protected
 		var delta = this.b.sub(this.a);
 		//add minute offset to avoid div-by-zero errors

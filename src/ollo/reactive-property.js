@@ -1,5 +1,6 @@
 import { Subject } from 'rxjs/Subject';
 import { Subscription } from 'rxjs/Subscription';
+import { Observable } from 'rxjs/Observable';
 
 export class ReactiveProperty extends Subject {
     constructor( v ) {
@@ -15,10 +16,7 @@ export class ReactiveProperty extends Subject {
                 this.next( v );
             }
         });
-
-        this.do( null, null, function () {
-
-        });
+        
     }
     _subscribe( subscriber ) {
         var result = super._subscribe( subscriber );

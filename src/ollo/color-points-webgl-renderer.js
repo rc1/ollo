@@ -1,8 +1,21 @@
-import { Scene, OrthographicCamera, WebGLRenderer, Geometry, Math, Vector3, PointsMaterial, Points, Texture, Color } from './../../node_modules/three/build/three.module';
-import * as Constants from './../../node_modules/three/src/constants';
-import $ from 'jquery';
-import Rx from 'rxjs';
+import { Scene } from 'three/src/scenes/Scene';
+import { OrthographicCamera } from 'three/src/cameras/OrthographicCamera';
+import { WebGLRenderer } from 'three/src/renderers/WebGLRenderer';
+import { Geometry } from 'three/src/core/Geometry';
+import { PointsMaterial } from 'three/src/materials/PointsMaterial';
+import { Texture } from 'three/src/textures/Texture';
+import { Color } from 'three/src/math/Color';
+import { Vector3 } from 'three/src/math/Vector3';
+import { Points } from 'three/src/objects/Points';
+import * as Constants from  'three/src/constants';
+import { Observable } from 'rxjs/Observable';
+import { Scheduler } from 'rxjs/Scheduler';
 import ReactiveProperty from './reactive-property.js';
+import "rxjs/add/observable/merge";
+import "rxjs/add/operator/subscribeOn";
+import "rxjs/add/operator/debounceTime";
+import "rxjs/add/operator/map";
+import "rxjs/add/operator/filter";
 import circleTexture from './circle-texture.js';
 
 class ColorPointsWebGLRenderer {
@@ -28,14 +41,14 @@ class ColorPointsWebGLRenderer {
         this.subscriptions = [];
 
     }
-    start ( $canvasEl ) {
+    start () {
 
         // Set size
         this.sizeProp.value = [ window.innerWidth, window.innerHeight ];
         this.subscriptions.push(
-            Rx.Observable
+            Observable
                .fromEvent( window , 'resize' )
-               .debounceTime( 100, Rx.Scheduler.requestAnimationFrame )
+               .debounceTime( 100, Scheduler.requestAnimationFrame )
                .map( _ => [ window.innerWidth, window.innerHeight ] )
                .subscribe( size => this.sizeProp.value = size ) );
 
@@ -47,7 +60,6 @@ class ColorPointsWebGLRenderer {
 
         // Renderer
         const renderer = new WebGLRenderer( {
-            //canvas: $canvasEl[ 0 ],
             antialias: false,
             autoClear: true,
             autoClearColor: 0x0000ff, // not working?
@@ -55,7 +67,7 @@ class ColorPointsWebGLRenderer {
         });
 
         // Add to body
-        $( 'body' ).append( renderer.domElement );
+        document.getElementsByTagName( 'body' )[0].appendChild( renderer.domElement );
 
         // Change rendering to window
         this.subscriptions.push(
@@ -125,7 +137,7 @@ class ColorPointsWebGLRenderer {
         const colorsNeedUpdateProp = new ReactiveProperty(false);
 
         this.subscriptions.push(
-            Rx.Observable.merge( this.sizeProp, this.pointsProp )
+            Observable.merge( this.sizeProp, this.pointsProp )
                 .subscribe( _ => pointsNeedsUpdateProp.value = true ));
 
         this.subscriptions.push(
@@ -133,7 +145,7 @@ class ColorPointsWebGLRenderer {
                 .subscribe( _ => colorsNeedUpdateProp.value = true ));
 
         this.subscriptions.push(
-            Rx.Observable.merge( pointsNeedsUpdateProp, colorsNeedUpdateProp )
+            Observable.merge( pointsNeedsUpdateProp, colorsNeedUpdateProp )
                 .filter( v => v === true )
                 .subscribe( () => {
 
@@ -172,7 +184,7 @@ class ColorPointsWebGLRenderer {
         // Frame
         this.subscriptions.push(
             needsRedraw
-                .subscribeOn( Rx.Scheduler.animationFrame )
+                .subscribeOn( Scheduler.animationFrame )
                 .subscribe( _ => {
                     renderer.render( scene, camera );
                 })

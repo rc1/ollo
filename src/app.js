@@ -1,21 +1,22 @@
-import $ from 'jquery';
 import ColorPointWebGLRenderer from './ollo/color-points-webgl-renderer';
 import Physics from './ollo/physics';
 import positions from './ollo/positions';
 import Position from './ollo/position';
-import { Color } from './../node_modules/three/build/three.module';
+import { Color } from 'three/src/math/Color';
 import { Gestures } from 'rxjs-gestures';
 import ReactiveProperty from './ollo/reactive-property.js';
 import * as screenfull from 'screenfull';
+import "rxjs/add/operator/sampleTime";
+import "rxjs/add/operator/delay";
 const toxi = require( './ollo/toxiclibsjs-ollo.js' );
-const glMatrix = require( "./../node_modules/gl-matrix/src/gl-matrix/common.js");
-const mat4 = require( "./../node_modules/gl-matrix/src/gl-matrix/mat4.js");
-const vec3 = require( "./../node_modules/gl-matrix/src/gl-matrix/vec3.js");
+const glMatrix = require( "gl-matrix/src/gl-matrix/common.js");
+const mat4 = require( "gl-matrix/src/gl-matrix/mat4.js");
+const vec3 = require( "gl-matrix/src/gl-matrix/vec3.js");
 
-$( function () {
+document.addEventListener( 'DOMContentLoaded', () => {
 
     // iOS
-    document.documentElement.addEventListener('touchmove', function (event) {
+    document.documentElement.addEventListener( 'touchmove', (event) => {
         event.preventDefault();
     }, false);
 
@@ -105,7 +106,6 @@ $( function () {
 
         // Update the reference, triggering a redraw
         renderer.pointsProp.value = rendererPArrays;
-
     });
 
     // Interaction
@@ -179,14 +179,12 @@ $( function () {
             }
         });
 
-    // fullscreen
-    $( window ).keypress(function() {
-        if (screenfull.enabled) {
-        	screenfull.request();
+    // Fullscreen on space
+    document.addEventListener( "keydown", (e) => {
+        if (screenfull.enabled && 32 === e.keyCode ) {
+            screenfull.request();
         }
-    });
-
-
+    }, false);
 });
 
 function inverseLerp ( start, end, scalar ) {

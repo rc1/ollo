@@ -1,5 +1,15 @@
 const toxi = require( './toxiclibsjs-ollo.js' );
-import Rx from 'rxjs';
+import { Observable } from 'rxjs/Observable';
+import { Subject } from 'rxjs/Subject';
+import "rxjs/add/observable/interval";
+import "rxjs/add/observable/fromEvent";
+import "rxjs/add/observable/from";
+import "rxjs/add/operator/zip";
+import "rxjs/add/operator/map";
+import "rxjs/add/operator/do";
+import "rxjs/add/operator/throttleTime";
+import "rxjs/add/operator/takeUntil";
+import { Scheduler } from 'rxjs/Scheduler';
 import ReactiveProperty from './reactive-property.js';
 
 class Physics {
@@ -29,8 +39,8 @@ class Physics {
 
         // Frame Updating
         this.frameCount = new ReactiveProperty( 0 );
-        this.subscriptions.push( Rx.Observable
-            .interval(0, Rx.Scheduler.animationFrame )
+        this.subscriptions.push( Observable
+            .interval(0, Scheduler.animationFrame )
             .throttleTime( 1/40 * 1000 )
             .subscribe( () => {
                 this.verletPhysics2D.update();
@@ -57,10 +67,10 @@ class Physics {
         const self = this;
         return (function () {
             const springs = [];
-            let cancel = new Rx.Subject();
-            Rx.Observable
+            let cancel = new Subject();
+            Observable
                 .from( self.startingPositions )
-                .zip( Rx.Observable.from( self.pointList ) )
+                .zip( Observable.from( self.pointList ) )
                 .map( pair => new toxi.physics2d.VerletConstrainedSpring2D( pair[0], pair[1], 0, 0.013 * 4 ) )
                 .do( spring => self.verletPhysics2D.addSpring( spring ) )
                 .do( spring => springs.push( spring ) )

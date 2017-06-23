@@ -1,6 +1,6 @@
-import { Matrix4 } from './../../node_modules/three/build/three.module';
-const mat4 = require( "./../../node_modules/gl-matrix/src/gl-matrix/mat4.js");
-const vec3 = require( "./../../node_modules/gl-matrix/src/gl-matrix/vec3.js");
+import { Matrix4 } from 'three/src/math/Matrix4';
+const mat4 = require( "gl-matrix/src/gl-matrix/mat4.js");
+const vec3 = require( "gl-matrix/src/gl-matrix/vec3.js");
 
 class Position {
     constructor ( ) {
