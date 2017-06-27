@@ -2,6 +2,7 @@ import ColorPointWebGLRenderer from './ollo/color-points-webgl-renderer';
 import Physics from './ollo/physics';
 import positions from './ollo/positions';
 import Position from './ollo/position';
+import ClickToPlayCanvas from './ollo/click-to-play-canvas';
 import { Color } from 'three/src/math/Color';
 import { Gestures } from 'rxjs-gestures';
 import ReactiveProperty from './ollo/reactive-property.js';

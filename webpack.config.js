@@ -1,8 +1,7 @@
-const path                = require('path');
-const webpack             = require('webpack');
-const HtmlWebpackPlugin   = require('html-webpack-plugin');
-const ExtractTextPlugin   = require('extract-text-webpack-plugin');
-const CopyWebpackPlugin   = require('copy-webpack-plugin');
+const path  = require( 'path' );
+const webpack = require( 'webpack' );
+const HtmlWebpackPlugin = require( 'html-webpack-plugin' );
+const ExtractTextPlugin = require( 'extract-text-webpack-plugin' );
 
 module.exports = () => {
 
@@ -38,6 +37,18 @@ module.exports = () => {
                 {
                     test: /\.glsl$/,
                     loader: 'webpack-glsl-loader'
+                },
+                // Images
+                {
+                    test: /\.(png|svg|jpg|gif)$/,
+                    use: [
+                        'file-loader'
+                    ]
+                },
+                // Webapp Manifest
+                {
+                    test: /manifest.json$/,
+                    loader: 'file-loader?name=manifest.json!web-app-manifest-loader'
                 }
             ]
         },
@@ -49,18 +60,10 @@ module.exports = () => {
     }
 
     config.plugins.push(new HtmlWebpackPlugin( {
-        template : './src/index.pug',
-        inject   : true,
-        minify   : false
+        template: './src/index.pug',
+        inject: true,
+        minify: false
     }));
-
-    config.plugins.push(new CopyWebpackPlugin( [
-        {
-            context: './copy/',
-            from: '**/*',
-            to: '.'
-        }
-    ]));
 
     if ( isProduction ) {
         config.plugins.push( new webpack.optimize.UglifyJsPlugin({
