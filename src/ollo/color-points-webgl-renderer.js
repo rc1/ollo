@@ -16,7 +16,7 @@ import "rxjs/add/operator/subscribeOn";
 import "rxjs/add/operator/debounceTime";
 import "rxjs/add/operator/map";
 import "rxjs/add/operator/filter";
-import circleTexture from './circle-texture.js';
+import circleTexture from './circle.png';
 
 class ColorPointsWebGLRenderer {
     constructor () {
@@ -96,7 +96,8 @@ class ColorPointsWebGLRenderer {
         // Texture
         // a texture of a circle
         const texture = new Texture();
-        const image = circleTexture();
+        const image = new Image();
+        image.src = circleTexture;
         image.onload = () => {
             texture.needsUpdate = true;
             needsRedraw.value = true;
