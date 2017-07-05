@@ -13,11 +13,52 @@ html( lang="en" )
             overflow: auto;
             margin: 0;
             padding: 0;
+            background-color: black;
         }
         canvas  {
             display: block;
             cursor: pointer;
         }
+        #click-to-play-container {
+            position: absolute;
+            bottom: -10px;
+            left: 0;
+            right: 0;
+            text-align: center;
+        }
+        #click-to-play {
+            display: inline-block;
+            transform: scale3d( 0.25,0.25,1 );
+            animation: fadeIn cubic-bezier(0.19, 1, 0.22, 1) 2s;
+            animation-iteration-count: 1;
+        }
+
+        #click-to-play.has-clicked {
+            animation: fadeOut cubic-bezier(0.19, 1, 0.22, 1) 1s;
+            animation-iteration-count: 1;
+            animation-fill-mode: forwards;
+        }
+
+        @keyframes fadeIn {
+          0% {
+            opacity:0;
+          }
+          100% {
+            opacity:1;
+          }
+        }
+
+        @keyframes fadeOut {
+          0% {
+            opacity:1;
+          }
+          100% {
+            opacity:0;
+          }
+        }
+
+
+
     title Ollo
     meta( name="viewport", content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0" )
     meta( name="apple-mobile-web-app-status-bar-style", content="black-translucent" )

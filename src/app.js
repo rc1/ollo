@@ -23,6 +23,23 @@ document.addEventListener( 'DOMContentLoaded', () => {
 
     // Config
     const curveRes = 100; // this requires
+    const clickToPlayBottomMargin = 30;
+    const useClickToPlay = !!getQueryVariable( 'useClickToPlay' );
+
+    // Click to Play
+    if ( useClickToPlay ) {
+        const clickToPlayCanvas = new ClickToPlayCanvas();
+        clickToPlayCanvas
+            .start()
+            .then( () => {
+                // Add it to the canvas
+                const container = document.createElement( 'div' );
+                container.id = 'click-to-play-container';
+                clickToPlayCanvas.canvas.id = 'click-to-play';
+                container.appendChild( clickToPlayCanvas.canvas );
+                document.body.appendChild( container );
+            });
+    }
 
     // Position
     const position = new Position( positions.logo.points );
@@ -45,7 +62,8 @@ document.addEventListener( 'DOMContentLoaded', () => {
 
     // Set positions size
     renderer.sizeProp.subscribe( size => {
-        position.setSize( positions.logo.points, window.innerWidth, window.innerHeight );
+        // Set the size, but consider if click to play is being used
+        position.setSize( positions.logo.points, window.innerWidth, window.innerHeight - ( useClickToPlay ? clickToPlayBottomMargin : 0 )  );
         renderer.pointSizeProp.value = position.getPointSize();
         updatePhysicsWorldBounds();
     });
@@ -187,6 +205,21 @@ document.addEventListener( 'DOMContentLoaded', () => {
         }
     }, false);
 });
+
+// Utils
+// =====
+function getQueryVariable( name )
+{
+       var query = window.location.search.substring(1);
+       var vars = query.split("&");
+       for (var i=0;i<vars.length;i++) {
+               var pair = vars[i].split("=");
+               if( pair[0] == name ){
+                   return pair[1];
+               }
+       }
+       return false;
+}
 
 function inverseLerp ( start, end, scalar ) {
 	return ( scalar - start ) / ( end - start );

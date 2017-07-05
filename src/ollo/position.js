@@ -28,7 +28,7 @@ class Position {
 
         // Fitting
         const xPadding = 0.25;
-        const yPadding = 0.25;
+        const yPadding = 0.25; //0.35
         this.scale = this.fitScaleRatio( xMax + xPadding, yMax + yPadding, width, height );
 
         const scaleMatrix = new Matrix4().makeScale( this.scale, this.scale, 1 );

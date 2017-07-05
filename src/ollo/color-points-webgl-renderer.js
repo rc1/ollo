@@ -63,6 +63,7 @@ class ColorPointsWebGLRenderer {
             antialias: false,
             autoClear: true,
             autoClearColor: 0x0000ff, // not working?
+            alpha: true,
             devicePixelRatio: window.devicePixelRatio || 1
         });
 
@@ -186,7 +187,7 @@ class ColorPointsWebGLRenderer {
         this.subscriptions.push(
             needsRedraw
                 .subscribeOn( Scheduler.animationFrame )
-                .subscribe( _ => {
+                .subscribe( function () {
                     renderer.render( scene, camera );
                 })
         );
