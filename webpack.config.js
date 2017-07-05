@@ -2,6 +2,7 @@ const path  = require( 'path' );
 const webpack = require( 'webpack' );
 const HtmlWebpackPlugin = require( 'html-webpack-plugin' );
 const ExtractTextPlugin = require( 'extract-text-webpack-plugin' );
+const OfflinePlugin = require( 'offline-plugin' );
 
 module.exports = () => {
 
@@ -65,6 +66,7 @@ module.exports = () => {
         minify: false
     }));
 
+    // Minify
     if ( isProduction ) {
         config.plugins.push( new webpack.optimize.UglifyJsPlugin({
             sourceMap: 'source-map',
@@ -76,6 +78,9 @@ module.exports = () => {
             }
         }));
     }
+
+    // Offline, must be last
+    config.plugins.push( new OfflinePlugin() );
 
     return config;
 };

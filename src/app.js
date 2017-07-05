@@ -13,8 +13,12 @@ const toxi = require( './ollo/toxiclibsjs-ollo.js' );
 const glMatrix = require( "gl-matrix/src/gl-matrix/common.js");
 const mat4 = require( "gl-matrix/src/gl-matrix/mat4.js");
 const vec3 = require( "gl-matrix/src/gl-matrix/vec3.js");
+import * as OfflinePluginRuntime from 'offline-plugin/runtime';
 
 document.addEventListener( 'DOMContentLoaded', () => {
+
+    // Allow offline
+    OfflinePluginRuntime.install();
 
     // iOS
     document.documentElement.addEventListener( 'touchmove', (event) => {
