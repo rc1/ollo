@@ -6,4 +6,4 @@ Web enabled, multi-touch re-interpretation of Biblotheque’s logo concept for O
 
 ### Options
 
-* __Show click to play__: embed with `?useClickToPlay=1`
+* __Show "Click to Play"__: embed with `?useClickToPlay=1` (for example [Play with it](http://ollo.theworkers.net/?useClickToPlay=1)).
