@@ -26,21 +26,6 @@ document.addEventListener( 'DOMContentLoaded', () => {
     const clickToPlayBottomMargin = 30;
     const useClickToPlay = !!getQueryVariable( 'useClickToPlay' );
 
-    // Click to Play
-    if ( useClickToPlay ) {
-        const clickToPlayCanvas = new ClickToPlayCanvas();
-        clickToPlayCanvas
-            .start()
-            .then( () => {
-                // Add it to the canvas
-                const container = document.createElement( 'div' );
-                container.id = 'click-to-play-container';
-                clickToPlayCanvas.canvas.id = 'click-to-play';
-                container.appendChild( clickToPlayCanvas.canvas );
-                document.body.appendChild( container );
-            });
-    }
-
     // Position
     const position = new Position( positions.logo.points );
 
@@ -60,10 +45,33 @@ document.addEventListener( 'DOMContentLoaded', () => {
         physics.verletPhysics2D.setWorldBounds( new toxi.geom.Rect( xy.x, xy.y, size.x + Math.abs(xy.x), size.y + Math.abs(xy.y) ) );
     };
 
+    // Click to Play
+    const clickToPlayTop = new ReactiveProperty(0);
+
+    if ( useClickToPlay ) {
+        const clickToPlayCanvas = new ClickToPlayCanvas();
+        clickToPlayCanvas
+            .start()
+            .then( () => {
+                // Add it to the canvas
+                const container = document.createElement( 'div' );
+                container.id = 'click-to-play-container';
+                clickToPlayCanvas.canvas.id = 'click-to-play';
+                container.appendChild( clickToPlayCanvas.canvas );
+                document.body.appendChild( container );
+                // Subscribe to the top position
+                clickToPlayTop.subscribe( v => {
+                    var height = clickToPlayCanvas.canvas.clientHeight;
+                    container.style.top = height * 2 + v + 'px';
+                });
+            });
+    }
+
     // Set positions size
     renderer.sizeProp.subscribe( size => {
         // Set the size, but consider if click to play is being used
-        position.setSize( positions.logo.points, window.innerWidth, window.innerHeight - ( useClickToPlay ? clickToPlayBottomMargin : 0 )  );
+        var bounds = position.setSize( positions.logo.points, window.innerWidth, window.innerHeight - ( useClickToPlay ? clickToPlayBottomMargin : 0 )  );
+        clickToPlayTop.value = bounds.bottom;
         renderer.pointSizeProp.value = position.getPointSize();
         updatePhysicsWorldBounds();
     });

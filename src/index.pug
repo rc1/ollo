@@ -21,19 +21,22 @@ html( lang="en" )
         }
         #click-to-play-container {
             position: absolute;
-            bottom: -10px;
+            top: 0;
             left: 0;
             right: 0;
             text-align: center;
         }
         #click-to-play {
             display: inline-block;
-            transform: scale3d( 0.25,0.25,1 );
+            height: 5vh;
+            width: auto;
+            max-height: 5vw;
             animation: fadeIn cubic-bezier(0.19, 1, 0.22, 1) 2s;
             animation-iteration-count: 1;
         }
 
         #click-to-play.has-clicked {
+            overflow: hidden;
             animation: fadeOut cubic-bezier(0.19, 1, 0.22, 1) 1s;
             animation-iteration-count: 1;
             animation-fill-mode: forwards;

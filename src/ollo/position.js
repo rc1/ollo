@@ -20,15 +20,18 @@ class Position {
         this._point = [ 0, 0, 0 ];
     }
     setSize ( points, width, height ) {
-        // Bounds
-        const xMin = points.reduce( ( acc, p ) => p[0] < acc ? p[0] : acc, Number.MAX_VALUE  );
-        const yMin = points.reduce( ( acc, p ) => p[1] < acc ? p[1] : acc, Number.MAX_VALUE  );
-        const xMax = points.reduce( ( acc, p ) => p[0] > acc ? p[0] : acc, Number.MIN_VALUE  );
-        const yMax = points.reduce( ( acc, p ) => p[1] > acc ? p[1] : acc, Number.MIN_VALUE  );
+
+        const pointsOrderedByX = points.slice().sort( ( a, b ) => a[0] - b[0] );
+        const pointsOrderedByY = points.slice().sort( ( a, b ) => a[1] - b[1] );
+
+        const xMin = first( pointsOrderedByX )[ 0 ];
+        const yMin = first( pointsOrderedByY )[ 1 ];
+        const xMax = last( pointsOrderedByX ) [ 0 ];
+        const yMax = last( pointsOrderedByY )[ 1 ];
 
         // Fitting
         const xPadding = 0.25;
-        const yPadding = 0.25; //0.35
+        const yPadding = 0.25;
         this.scale = this.fitScaleRatio( xMax + xPadding, yMax + yPadding, width, height );
 
         const scaleMatrix = new Matrix4().makeScale( this.scale, this.scale, 1 );
@@ -51,6 +54,19 @@ class Position {
 
         mat4.copy( this.toSceenGlMatrix, this.toScreenMatrix.elements );
         mat4.copy( this.toPhysicsGlMatrix, this.toPhysicsMatrix.elements );
+
+        // Return screen bounding box
+        const bottom = [ 0, yMax, 0 ];
+        const top = [ 0, yMin, 0 ];
+        const left = [ xMin, 0, 0 ];
+        const right = [ xMax, 0, 0 ];
+        return {
+            bottom: vec3.transformMat4( bottom, bottom, this.toSceenGlMatrix )[ 1 ],
+            top: vec3.transformMat4( top, top, this.toSceenGlMatrix )[ 1 ],
+            left: vec3.transformMat4( left, left, this.toSceenGlMatrix )[ 0 ],
+            right: vec3.transformMat4( right, right, this.toSceenGlMatrix )[ 0 ],
+        };
+
     }
     copyFromScreenToPhysics ( screenPoint, physicsPoint ) {
         this._point[ 0 ] = screenPoint[ 0 ];
@@ -77,5 +93,14 @@ class Position {
         return Math.min(widthScale, heightScale);
     }
 }
+
+// Utils
+function first ( arr ) {
+    return arr[ 0 ];
+}
+function last ( arr ) {
+    return arr[ arr.length - 1 ];
+}
+
 
 export default Position;
