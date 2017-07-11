@@ -3,6 +3,7 @@ const webpack = require( 'webpack' );
 const HtmlWebpackPlugin = require( 'html-webpack-plugin' );
 const ExtractTextPlugin = require( 'extract-text-webpack-plugin' );
 const OfflinePlugin = require( 'offline-plugin' );
+const CleanWebpackPlugin = require( 'clean-webpack-plugin' );
 
 module.exports = () => {
 
@@ -32,7 +33,11 @@ module.exports = () => {
                 {
                     test: /\.pug$/,
                     include: path.join( __dirname, 'src' ),
-                    loaders: [ 'pug-loader' ]
+                    loaders: 'pug-loader',
+                    options: {
+                        // Let HtmlWebpackPlugin do the minification
+                        pretty: true
+                    }
                 },
                 // GLSL
                 {
@@ -60,10 +65,12 @@ module.exports = () => {
         config.devtool = 'source-map';
     }
 
+    config.plugins.push( new CleanWebpackPlugin( './bin' ) );
+
     config.plugins.push(new HtmlWebpackPlugin( {
         template: './src/index.pug',
         inject: true,
-        minify: false
+        minify: isProduction
     }));
 
     // Minify
@@ -77,10 +84,13 @@ module.exports = () => {
                 comments: false
             }
         }));
-    }
 
-    // Offline, must be last
-    config.plugins.push( new OfflinePlugin() );
+        // Offline, must be last
+        config.plugins.push( new OfflinePlugin( {
+            disableInstall: false,
+            responseStrategy: 'network-first'
+        }));
+    }
 
     return config;
 };

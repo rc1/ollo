@@ -19,7 +19,7 @@ class Position {
 
         this._point = [ 0, 0, 0 ];
     }
-    setSize ( points, width, height ) {
+    setSize ( points, width, height, xPadding, yPadding ) {
 
         const pointsOrderedByX = points.slice().sort( ( a, b ) => a[0] - b[0] );
         const pointsOrderedByY = points.slice().sort( ( a, b ) => a[1] - b[1] );
@@ -30,8 +30,6 @@ class Position {
         const yMax = last( pointsOrderedByY )[ 1 ];
 
         // Fitting
-        const xPadding = 0.25;
-        const yPadding = 0.25;
         this.scale = this.fitScaleRatio( xMax + xPadding, yMax + yPadding, width, height );
 
         const scaleMatrix = new Matrix4().makeScale( this.scale, this.scale, 1 );

@@ -27,8 +27,10 @@ document.addEventListener( 'DOMContentLoaded', () => {
 
     // Config
     const curveRes = 100; // this requires
-    const clickToPlayBottomMargin = 30;
     const useClickToPlay = !!getQueryVariable( 'useClickToPlay' );
+    const clickToPlayBottomMargin = 0;
+    const clickToPlayXPadding = 0.25;
+    const clickToPlayYPadding = useClickToPlay ? 0.8 : 0.25;
 
     // Position
     const position = new Position( positions.logo.points );
@@ -66,7 +68,7 @@ document.addEventListener( 'DOMContentLoaded', () => {
                 // Subscribe to the top position
                 clickToPlayTop.subscribe( v => {
                     var height = clickToPlayCanvas.canvas.clientHeight;
-                    container.style.top = height * 2 + v + 'px';
+                    container.style.top = height * 4 + v + 'px';
                 });
             });
     }
@@ -74,7 +76,7 @@ document.addEventListener( 'DOMContentLoaded', () => {
     // Set positions size
     renderer.sizeProp.subscribe( size => {
         // Set the size, but consider if click to play is being used
-        var bounds = position.setSize( positions.logo.points, window.innerWidth, window.innerHeight - ( useClickToPlay ? clickToPlayBottomMargin : 0 )  );
+        var bounds = position.setSize( positions.logo.points, window.innerWidth * 1.03, window.innerHeight - clickToPlayBottomMargin, clickToPlayXPadding, clickToPlayYPadding );
         clickToPlayTop.value = bounds.bottom;
         renderer.pointSizeProp.value = position.getPointSize();
         updatePhysicsWorldBounds();

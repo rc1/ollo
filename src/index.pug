@@ -1,5 +1,5 @@
 doctype html
-html( lang="en" )
+html( lang="en", manifest=htmlWebpackPlugin.useOffline ? '' : false  )
   head
     style.
         html {
@@ -28,9 +28,9 @@ html( lang="en" )
         }
         #click-to-play {
             display: inline-block;
-            height: 5vh;
+            height: 3.5vh;
             width: auto;
-            max-height: 5vw;
+            max-height: 3.5vw;  
             animation: fadeIn cubic-bezier(0.19, 1, 0.22, 1) 2s;
             animation-iteration-count: 1;
         }
