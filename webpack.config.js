@@ -70,7 +70,14 @@ module.exports = () => {
     config.plugins.push(new HtmlWebpackPlugin( {
         template: './src/index.pug',
         inject: true,
-        minify: isProduction
+        minify: isProduction ? {
+            removeAttributeQuotes: true,
+            collapseWhitespace: true,
+            html5: true,
+            minifyCSS: true,
+            removeComments: true,
+            removeEmptyAttributes: true
+        } : false
     }));
 
     // Minify

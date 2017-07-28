@@ -45,9 +45,10 @@ document.addEventListener( 'DOMContentLoaded', () => {
     // Set the physics size
     const updatePhysicsWorldBounds = () => {
         const xy = new toxi.geom.Vec2D();
-        position.copyFromScreenToPhysics( [0,0], xy );
+        // Use the point size to determin the x and y space
+        position.copyFromScreenToPhysics( [position.getPointSize()/2,position.getPointSize()/2], xy );
         const size = new toxi.geom.Vec2D();
-        position.copyFromScreenToPhysics( [ window.innerWidth, window.innerHeight ], size );
+        position.copyFromScreenToPhysics( [ window.innerWidth - position.getPointSize()/2, window.innerHeight - position.getPointSize()/2 ], size );
         physics.verletPhysics2D.setWorldBounds( new toxi.geom.Rect( xy.x, xy.y, size.x + Math.abs(xy.x), size.y + Math.abs(xy.y) ) );
     };
 
