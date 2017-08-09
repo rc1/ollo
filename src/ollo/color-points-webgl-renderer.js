@@ -63,9 +63,10 @@ class ColorPointsWebGLRenderer {
             antialias: false,
             autoClear: true,
             autoClearColor: 0x0000ff, // not working?
-            alpha: true,
-            devicePixelRatio: window.devicePixelRatio || 1
+            alpha: true
         });
+
+        renderer.setPixelRatio( 2 );
 
         // Add to body
         document.getElementsByTagName( 'body' )[0].appendChild( renderer.domElement );
